@@ -1,0 +1,5 @@
+scenario,record_ids,explanation
+duplicate_payment,PAY-0003;PAY-0021,Two completed payments on the same invoice INV-0003.
+unapproved_large_purchase,PR-0006,LKR 165000 request pending approval but its invoice has a completed payment.
+wrong_approver_role,PR-0014,LKR 145000 approved by ProcurementOfficer rather than Manager.
+potential_split_purchase,PR-0009;PR-0010,"Same business need, requester and supplier; LKR 60000+65000 exceeds LKR 100000 manager threshold."
