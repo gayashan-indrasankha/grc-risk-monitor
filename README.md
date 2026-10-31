@@ -80,3 +80,16 @@ These paths are relative to the current working directory of `psql`. Python + SQ
 6. Explain why a flagged exception does not automatically prove fraud.
 
 **Next stage:** write SQL/Python rules to flag the four planted exception scenarios, without referring to the ground-truth labels during detection. Then validate detected results against the labels.
+
+## Project owner and progress
+
+Personal learning project maintained by **Gayashan Indrasankha**.
+
+Current implementation: synthetic procurement data, a relational schema,
+local SQLite setup, exploration queries and fixture validation checks.
+
+Planned development: exception-detection rules, a Power BI dashboard,
+Power Automate workflows and AI evaluation.
+
+This repository records the project's development and learning progress.
+All business records are synthetic.
