@@ -1,0 +1,21 @@
+request_id,requested_on,requester_id,department,supplier_id,category,business_need_id,amount_lkr,approval_status,approved_by,approver_role
+PR-0001,2026-10-01,EMP-001,IT,SUP-001,Office Supplies,NEED-0001,22000.00,Approved,EMP-002,ProcurementOfficer
+PR-0002,2026-10-02,EMP-004,Operations,SUP-002,IT Equipment,NEED-0002,76000.00,Approved,EMP-002,ProcurementOfficer
+PR-0003,2026-10-03,EMP-005,HR,SUP-003,Software,NEED-0003,85000.00,Approved,EMP-002,ProcurementOfficer
+PR-0004,2026-10-04,EMP-006,Finance,SUP-004,Facilities,NEED-0004,125000.00,Approved,EMP-003,Manager
+PR-0005,2026-10-05,EMP-001,IT,SUP-005,Training,NEED-0005,42000.00,Approved,EMP-002,ProcurementOfficer
+PR-0006,2026-10-06,EMP-004,Operations,SUP-001,Office Supplies,NEED-0006,165000.00,Pending,,
+PR-0007,2026-10-07,EMP-005,HR,SUP-002,IT Equipment,NEED-0007,15000.00,Approved,EMP-002,ProcurementOfficer
+PR-0008,2026-10-08,EMP-006,Finance,SUP-003,Software,NEED-0008,92000.00,Approved,EMP-002,ProcurementOfficer
+PR-0009,2026-10-09,EMP-001,IT,SUP-002,IT Equipment,NEED-SPLIT-01,60000.00,Approved,EMP-002,ProcurementOfficer
+PR-0010,2026-10-10,EMP-001,IT,SUP-002,IT Equipment,NEED-SPLIT-01,65000.00,Approved,EMP-002,ProcurementOfficer
+PR-0011,2026-10-11,EMP-005,HR,SUP-001,Office Supplies,NEED-0011,180000.00,Approved,EMP-003,Manager
+PR-0012,2026-10-12,EMP-006,Finance,SUP-002,IT Equipment,NEED-0012,56000.00,Approved,EMP-002,ProcurementOfficer
+PR-0013,2026-10-13,EMP-001,IT,SUP-003,Software,NEED-0013,33000.00,Approved,EMP-002,ProcurementOfficer
+PR-0014,2026-10-14,EMP-004,Operations,SUP-004,Facilities,NEED-0014,145000.00,Approved,EMP-002,ProcurementOfficer
+PR-0015,2026-10-15,EMP-005,HR,SUP-005,Training,NEED-0015,71000.00,Approved,EMP-002,ProcurementOfficer
+PR-0016,2026-10-16,EMP-006,Finance,SUP-001,Office Supplies,NEED-0016,120000.00,Approved,EMP-003,Manager
+PR-0017,2026-10-17,EMP-001,IT,SUP-002,IT Equipment,NEED-0017,45000.00,Approved,EMP-002,ProcurementOfficer
+PR-0018,2026-10-18,EMP-004,Operations,SUP-003,Software,NEED-0018,38000.00,Approved,EMP-002,ProcurementOfficer
+PR-0019,2026-10-19,EMP-005,HR,SUP-004,Facilities,NEED-0019,210000.00,Approved,EMP-003,Manager
+PR-0020,2026-10-20,EMP-006,Finance,SUP-005,Training,NEED-0020,27000.00,Approved,EMP-002,ProcurementOfficer
