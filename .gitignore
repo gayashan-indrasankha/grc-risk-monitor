@@ -1,0 +1,15 @@
+﻿
+# Local databases and Python files
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.db
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Local credentials
+.env
+.env.*
+!.env.example
