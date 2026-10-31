@@ -1,0 +1,61 @@
+STAGE 3 — POWER BI DAX MEASURES
+---------------------------------
+Create each formula as a SEPARATE measure under Modeling > New measure.
+Do not paste this entire text file as one expression.
+The table names must be exactly: FactRequests, FactPayments, FactExceptions.
+
+Total Purchase Requests =
+COALESCE(DISTINCTCOUNT(FactRequests[request_id]), 0)
+
+Total Payments =
+COALESCE(DISTINCTCOUNT(FactPayments[payment_id]), 0)
+
+Total Findings =
+COALESCE(DISTINCTCOUNT(FactExceptions[finding_id]), 0)
+
+High Risk Findings =
+CALCULATE(
+    [Total Findings],
+    FactExceptions[severity] = "High"
+)
+
+Open Findings =
+CALCULATE(
+    [Total Findings],
+    FactExceptions[status] = "Open"
+)
+
+Open High Risk Findings =
+CALCULATE(
+    [Total Findings],
+    FactExceptions[severity] = "High",
+    FactExceptions[status] = "Open"
+)
+
+Affected Suppliers =
+COALESCE(DISTINCTCOUNT(FactExceptions[supplier_id]), 0)
+
+Approved Purchase Requests =
+CALCULATE(
+    [Total Purchase Requests],
+    FactRequests[approval_status] = "Approved"
+)
+
+NOTE ABOUT RELATED AMOUNT:
+FactExceptions[related_amount_lkr] is an associated transaction value, NOT
+confirmed financial loss. An exception can overlap another exception.
+Do not label SUM(FactExceptions[related_amount_lkr]) as "Fraud Loss".
+
+EXPECTED BASELINE WITHOUT FILTERS:
+Total Purchase Requests = 20
+Total Payments = 21
+Total Findings = 4
+High Risk Findings = 3
+Open Findings = 4
+Open High Risk Findings = 3
+Affected Suppliers = 4
+
+DATE FILTERING:
+Dimension dates filter requests by requested_on, payments by paid_on,
+and exceptions by the UNDERLYING EVENT DATE (not detection date).
+This means date-sliced totals reflect different event types. That is intentional.
