@@ -54,7 +54,7 @@ These tests are **illustrative synthetic cases**. They do not yet test every rea
 
 ## C. Power Automate manual verification
 
-Follow `STAGE5_POWER_AUTOMATE_TESTS.md` for safe scenarios. The completed first and second runs already provide evidence of basic filtering and duplicate prevention. Do not rerun the live flow just to cause more email traffic.
+Follow `STAGE5_POWER_AUTOMATE_TESTS.md` for safe scenarios. Existing alert subjects, original register observations and the rerun diagram provide partial evidence of filtering and delivery-state handling. The results report records the missing first-/second-run filter outputs and no-new-mail verification. Do not rerun the live flow just to cause more email traffic.
 
 | Test ID | Scenario | Expected |
 |---|---|---|

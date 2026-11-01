@@ -2,7 +2,7 @@
 
 ## What you already verified in Stage 4
 
-A manual flow read Excel `tblExceptions`, filtered for `severity=High`, `status=Open`, `alert_status=Pending`, iterated over three findings, sent three Gmail test messages, then updated their Excel rows. A second run sent zero messages. This is good evidence for basic flow logic.
+A manual flow read Excel `tblExceptions`, filtered for `severity=High`, `status=Open`, `alert_status=Pending`, iterated over three findings, sent three Gmail test messages, then updated their Excel rows. The archived rerun diagram shows skipped send/update actions. Empty Filter array output, explicit zero iterations and no-new-mail verification remain partially evidenced in the results report; the diagram alone does not establish those outcomes.
 
 ## Test 1: Verify persistent Excel state (safe, read-only)
 
