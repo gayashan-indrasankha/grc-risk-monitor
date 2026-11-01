@@ -16,3 +16,8 @@ venv/
 
 output/*.csv
 !output/.gitkeep
+
+# Keep original review attachments out of Git; publish only reviewed Stage 5 copies
+docs/evidence/*
+!docs/evidence/stage5/
+!docs/evidence/stage5/*

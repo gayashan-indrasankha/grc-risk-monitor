@@ -10,13 +10,13 @@
 - Tester: **Gayashan Indrasankha**; results supplied from the tester's PowerShell session, six screenshots and the follow-up confirmations recorded below.
 - Unittest command: `python -m unittest discover -s tests -p "test_*.py" -v`.
 - Validation command: `python scripts/stage5_validate.py`.
-- Python and Power BI Desktop versions: **not recorded in the supplied evidence**.
+- Python version for the reproducibility run: **Python 3.11.9**. Power BI Desktop version: **not available in the supplied evidence or current command environment**; record it from Power BI Desktop's About dialog before claiming full reproducibility.
 - Power Automate environment: cloud flow using Gmail and Excel actions; environment name and tenant identifiers are not recorded here.
-- Repository HEAD at report preparation: `9cbf5c95567b14f13e2d95a1ecfc7c0d0e2a1c00`. The supplied console transcript does not independently identify the commit used for its test run.
+- Repository commit tested in the reproducibility run: `fbb9b918cdf511672e6a542f11b4206a0290100` (`fbb9b91`). The report file and archived evidence remain uncommitted working-tree changes; detection, export and test code were run at this commit.
 - Data: existing synthetic baseline in `data/`, local `grc_stage1.sqlite`, `output/exceptions.csv`, and the five `powerbi/data/` exports.
-- Validation timestamp: **2026-11-01 08:25:45 UTC / 13:55:45 Asia/Colombo**, from [stage5_validation_result.json](stage5_validation_result.json).
+- Validation timestamp: **2026-11-01 09:11:28 UTC / 14:41:28 Asia/Colombo**, from [stage5_validation_result.json](stage5_validation_result.json).
 
-Automated run results below are transcribed from the tester's supplied console output and checked against the existing validation JSON. The report update did not rerun the tests or operate the live cloud flow. Screenshot observations were also compared with the local Power BI CSVs; this comparison is separate from running the Power BI report.
+The automated results below are from a fresh local run at the recorded commit. The run did not operate the live cloud flow or prove a live Power BI refresh. Screenshot observations were also compared with the local Power BI CSVs; this comparison is separate from running the Power BI report.
 
 Result meanings: **Pass** records the observed or explicitly tester-confirmed scope stated in the row; **Partial** means only part of the planned check is evidenced; **Not evidenced** means the supplied material does not establish execution or outcome; **Not run** identifies failure/concurrency scenarios for which no execution was reported. No unperformed failure test is recorded as passed.
 
@@ -92,18 +92,18 @@ The validator reports agreement between current local detection results, the exc
 
 ## Screenshot evidence register
 
-S01-S06 identify the six screenshots attached to the test report request, in attachment order. They are conversation evidence references, not links to image files already stored in Git. Repository copies and durable image links are **pending**; archive reviewed, redacted copies under `docs/evidence/stage5/` before publishing the screenshot evidence.
+S01-S06 identify the six screenshots attached to the test report request, in attachment order. Reviewed repository copies are archived under [`docs/evidence/stage5/`](evidence/stage5/). S04 is cropped before the `reviewer_email` column; no personal address is included in the archived copy.
 
 | ID | Screenshot | Observed evidence |
 |---|---|---|
-| S01 | Baseline Power BI dashboard | Cards 20 / 21 / 4 / 3 / 4; supplier All; full displayed date range; four type bars; 3 High and 1 Medium; four finding rows; related-value total LKR 520,000 |
-| S02 | Power BI with narrowed date range | 1-10 October 2026; cards 10 / 7 / 3 / 2 / 3; EX-0001, EX-0002 and EX-0004 remain; related-value total LKR 375,000 |
-| S03 | Power BI with supplier selected | Fictional Facilities Co Ltd; cards 3 / 3 / 1 / 1 / 1; only EX-0003, wrong approver role; related value LKR 145,000 |
-| S04 | Excel exception register | Three High/Open rows show Sent with nonempty timestamps; the Medium/Open split-purchase row remains Pending with an empty sent timestamp; finding ID column is clipped |
-| S05 | Power Automate run diagram | Trigger, List rows and Filter array show success; Apply to each, Send email (V2) and Update a row show skipped indicators; email precedes row update in the displayed loop |
-| S06 | Mailbox alert list | Three synthetic High Risk alert subjects reference EX-0001, EX-0002 and EX-0003; message bodies and full recipient fields are not shown |
+| S01 | [Baseline Power BI dashboard](evidence/stage5/S01-power-bi-baseline.png) | Cards 20 / 21 / 4 / 3 / 4; supplier All; full displayed date range; four type bars; 3 High and 1 Medium; four finding rows; related-value total LKR 520,000 |
+| S02 | [Power BI with narrowed date range](evidence/stage5/S02-power-bi-date-filter.png) | 1-10 October 2026; cards 10 / 7 / 3 / 2 / 3; EX-0001, EX-0002 and EX-0004 remain; related-value total LKR 375,000 |
+| S03 | [Power BI with supplier selected](evidence/stage5/S03-power-bi-supplier-filter.png) | Fictional Facilities Co Ltd; cards 3 / 3 / 1 / 1 / 1; only EX-0003, wrong approver role; related value LKR 145,000 |
+| S04 | [Redacted Excel exception register](evidence/stage5/S04-excel-register-redacted.png) | Three High/Open rows show Sent with nonempty timestamps; the Medium/Open split-purchase row remains Pending with an empty sent timestamp; finding ID column is clipped |
+| S05 | [Power Automate run diagram](evidence/stage5/S05-power-automate-second-run.png) | Trigger, List rows and Filter array show success; Apply to each, Send email (V2) and Update a row show skipped indicators; email precedes row update in the displayed loop |
+| S06 | [Mailbox alert list](evidence/stage5/S06-gmail-alerts.png) | Three synthetic High Risk alert subjects reference EX-0001, EX-0002 and EX-0003; message bodies and full recipient fields are not shown |
 
-**Redaction required:** S04 exposes a real `reviewer_email` address. Its value is deliberately not copied into this report. Mask that column before saving or publishing the screenshot. Check other screenshot copies for unrelated personal/account details and publish only reviewed evidence.
+**Redaction note:** The archived S04 copy is cropped before the `reviewer_email` column. The original conversation attachment remains outside the report archive and must not be published.
 
 The Power BI screenshot totals were compared with the current CSV exports:
 
@@ -137,9 +137,20 @@ Test definitions: [STAGE5_TEST_PLAN.md](STAGE5_TEST_PLAN.md).
 | BI02 - Type and severity breakdown | **Pass** | S01 shows four type bars of one finding each and a severity breakdown of 3 High / 1 Medium, agreeing with R01-R04 in the CSV. |
 | BI03 - Supplier filtering and reset | **Partial** | S01 versus S03 demonstrates correct filtering to Fictional Facilities Co Ltd: 3 requests, 3 payments and one High/Open finding, EX-0003. Clearing that supplier selection and observing the reset was not evidenced. |
 | BI04 - Date filtering | **Pass** | S01 versus S02 demonstrates the expected inclusion/exclusion of dated findings and matching counts. EX-0003 on 18 October is excluded from 1-10 October. |
-| BI05 - Finding detail, evidence and action | **Partial** | S01 shows the four IDs, types, severity and amounts; S03 shows the single supplier-related finding. Evidence text is truncated, recommended actions are offscreen, and filtering by finding itself was not demonstrated. |
+| BI05 - Finding detail, evidence and action | **Partial** | S01 shows the four IDs, types, severity and amounts; S03 shows the single supplier-related finding. The complete source values are reproduced below for independent review, but Power BI evidence text is truncated, recommended actions are offscreen, and filtering by finding itself was not demonstrated. |
 | BI06 - Related-value labeling | **Pass, observed label** | The visible header is `Sum of related_amount_lkr`, not a fraud/loss label. Improve it to a readable title such as "Related transaction amount (LKR)" and add the overlapping-value/human-review explanation. |
 | BI07 - Save and reopen report | **Pass, tester-confirmed** | The tester confirmed that saving and reopening the `.pbix` passed (C02). This result is based on the tester's confirmation; a separate reopen screenshot was not supplied. |
+
+### Full finding evidence and recommended actions from the source export
+
+This register makes the expected BI05 detail independently reviewable while the Power BI visual remains incomplete. Values below are copied from [`FactExceptions.csv`](../powerbi/data/FactExceptions.csv); they do not prove that the corresponding fields were displayed in the `.pbix`.
+
+| Finding | Evidence | Recommended action |
+|---|---|---|
+| EX-0001 | Invoice INV-0003 has 2 completed full-value payments: PAY-0003, PAY-0021. | Review bank confirmations and supporting invoices; check for refunds or valid corrections. |
+| EX-0002 | Request PR-0006 is Pending but a completed payment exists (PAY-0006). | Verify approval records and payment timing; escalate to the authorized reviewer. |
+| EX-0003 | Request PR-0014 exceeds LKR 100,000 but was approved by EMP-002 (role: ProcurementOfficer). | Check the approval delegation policy and obtain manager review. |
+| EX-0004 | Requests PR-0009, PR-0010 share supplier, requester and business need within 3 days; amounts LKR 60,000.00 and 65,000.00 exceed threshold when combined. | Examine business justification and whether the requests were legitimately separate. |
 
 ## Manual Power Automate validation
 
@@ -169,20 +180,32 @@ The skipped actions in S05 are not a Gmail failure test. Any future failure exer
 | L05 | Simultaneous runs can read the same Pending row. | Concurrency behavior and exactly-once delivery are unverified; PA08 is unperformed. Use controlled sequential prototype runs and design durable claiming before automated concurrent use. |
 | L06 | The live Excel workbook is not automatically synchronized from current local detection. Regeneration can also reassign sequential finding IDs. | Preserve Sent state; reconcile intentionally and use stable business identities before integrating refresh and notification automation. |
 | L07 | Local automated checks do not execute live Power BI or cloud connector behavior. | Complete the remaining manual checks and record their actual results. |
-| L08 | Screenshot files are referenced from the review conversation and are not yet archived with this report; S04 contains a personal address. | Add redacted repository copies and durable links. Do not publish the unredacted register screenshot. |
+| L08 | Screenshot files were initially referenced from the review conversation; S04 contained a personal address. | **Resolved for the archived evidence:** reviewed S01-S06 copies are linked above under `docs/evidence/stage5/`, and S04 is cropped before `reviewer_email`. Do not publish the unredacted register screenshot. |
 | L09 | Detail evidence is truncated and recommendations are offscreen in the report screenshots; the amount header is a raw field name. | Capture readable detail/action evidence and improve the title to "Related transaction amount (LKR)". |
-| L10 | Python/Power BI versions, the test-run commit, first-run filter output and rerun empty-filter output are not recorded. | Add version/run metadata and focused screenshots or explicit tester observations. Success-only Run after configuration is now recorded as tester-confirmed (C03); dynamic failure behavior remains untested. |
+| L10 | Python/Power BI versions, the first-run filter output and rerun empty-filter output are not all recorded. | **Partially resolved:** Python 3.11.9, the tested commit and validation timestamp are recorded above. Power BI Desktop version and focused filter-output evidence remain outstanding; dynamic failure behavior remains untested. |
 
 No automated failures were reported in the supplied run. Pending manual checks and documented design risks remain open; they are not converted into passes by the local PASS result.
 
 ## Outcome and remaining work
 
 - **Overall Stage 5 acceptance status: PARTIAL.** Local automated testing and reconciliation passed. Screenshots support manual filtering, chart counts, visible email subjects and notification state; the tester also confirmed Refresh, save/reopen and success-only Run after configuration, with the specific boundaries above.
-- Confirm supplier reset and readable finding evidence/actions (BI03, BI05). Power BI Refresh and save/reopen are now recorded as passed through C01-C02.
-- Capture or explicitly record first-run eligible filter output and second-run empty filter/zero iterations/no new mail (PA01, PA04). Success-only Run after configuration is now recorded as passed through C03.
-- Keep PA06-PA08 marked Not run unless controlled exercises are actually performed. Retain the failure/concurrency limitations even if the basic happy path works.
-- Archive redacted S01-S06 copies and link them from the screenshot register; record tool versions and test-run commit when known.
-- Before describing Stage 5 as complete or moving to Stage 6, review these open items against the acceptance criteria in the test plan.
+
+Resolve the remaining gaps in this order. The completion criteria below are planned checks, not additional passed results.
+
+| Priority | Action | Completion evidence / why | Current status |
+|---|---|---|---|
+| High - 1 | Confirm supplier-filter reset in Power BI. | With the full baseline date range, select Fictional Facilities Co Ltd and confirm 3 / 3 / 1 / 1 / 1. Clear the supplier selection and verify the five cards return to 20 / 21 / 4 / 3 / 4 and all four findings reappear. Record the observed result to complete BI03. | Pending; BI03 remains Partial. |
+| High - 2 | Display full finding evidence and recommended actions. | Make the complete `evidence` and `recommended_action` fields readable; filter by a finding and check its ID, supporting evidence and action against the source CSV. Capture readable detail views for the four findings to complete BI05. | Pending; BI05 remains Partial. |
+| High - 3 | Capture the empty Filter array output from the existing second flow run. | Inspect the saved run history, show the empty output (`[]`) and zero loop iterations, and record the tester's observation that the rerun generated no new messages. An empty filter screenshot alone does not establish the mailbox outcome. Strengthens PA04 without sending more alerts. | Pending; PA04 remains Partial. |
+| Medium - 4 | Save redacted screenshots under `docs/evidence/stage5/`. | Archive S01-S06 and the additional check evidence, mask the real reviewer email in S04, and add working relative links in the evidence register. Makes the report independently reviewable. | **Complete for supplied captures:** six reviewed copies are archived and linked; no new BI/flow state was inferred. |
+| Medium - 5 | Record Python/Power BI versions and the tested Git commit. | Record `python --version`, the Power BI Desktop version, and the commit captured for the actual test session. Improves reproducibility; keep a newly observed environment distinct from an earlier run with unknown versions. | **Partial:** Python 3.11.9, commit `fbb9b91`, and a fresh local validation are recorded; Power BI Desktop version remains unavailable. |
+| Later - 6 | Test Gmail failures, Excel update failures after sending, and concurrent runs. | Use a copied flow and workbook with controlled test recipients. Record the actual outcome of each exercised scenario, including any duplicate-delivery defect. Improves reliability; documented risks alone do not count as executed tests. | PA06-PA08 remain Not run. |
+
+PA01 also remains Partial: capture or explicitly record that the first-run filter selected exactly three High/Open/Pending rows. The second-run empty-filter evidence does not close that separate first-run gap.
+
+For a **new** test session, capture `git rev-parse HEAD` before running the tests, then retain the console results and matching validation JSON. Do not replace the historical test-run commit with the current HEAD unless the tests are actually rerun against it. Refresh, save/reopen and success-only Run after configuration remain recorded as passed through C01-C03.
+
+Before describing Stage 5 as complete or moving to Stage 6, review the outstanding evidence against the test plan's acceptance criteria. Retain failure/concurrency limitations and the Not run results unless those scenarios are actually exercised.
 
 ### Learning demonstrated by the supplied evidence
 
