@@ -1,0 +1,19 @@
+{
+  "generated_utc": "2026-11-01T07:57:33.284927+00:00",
+  "scope": "Local synthetic baseline only; cloud behavior requires manual tests",
+  "result": "PASS",
+  "counts": {
+    "purchase_requests": 20,
+    "payments": 21,
+    "findings": 4,
+    "high_risk_findings": 3,
+    "open_findings": 4,
+    "medium_risk_findings": 1
+  },
+  "planted_case_tp": 4,
+  "planted_case_fp": 0,
+  "planted_case_fn": 0,
+  "planted_case_precision": 1.0,
+  "planted_case_recall": 1.0,
+  "problems": []
+}
