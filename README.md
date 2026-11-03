@@ -190,7 +190,7 @@ output/                Ignored local exception CSV
 powerbi/               Report, reporting tables, DAX and setup guide
 tests/                 Local unittest suites
 docs/                  Data dictionary, architecture, evidence and interview notes
-docs/evidence/stage5/   Reviewed screenshot archive
+docs/evidence/stage5/  Reviewed screenshot archive
 .github/workflows/     Synthetic local pipeline CI definition
 ```
 
