@@ -87,27 +87,7 @@ Each finding carries its type, severity, record references, supplier, value, evi
 
 ## How it works
 
-```mermaid
-flowchart LR
-    subgraph LOCAL["Local pipeline: Python + SQL"]
-        A["Synthetic source CSVs<br/>61 transaction records"] --> B[("SQLite<br/>database")]
-        B --> C["4 SQL control rules<br/>run by Python detector"]
-        C --> D["exceptions.csv<br/>evidence + next action"]
-    end
-    subgraph BI["Analytics: Power BI"]
-        E["5 reporting tables"] --> F["Interactive dashboard<br/>KPIs, charts, slicers"]
-    end
-    subgraph CLOUD["Alerts: Microsoft cloud + Gmail"]
-        G["Excel Online<br/>exception register"] --> H["Power Automate flow"]
-        H --> I["Email alert to reviewer"]
-        I --> J["Row marked Sent<br/>with UTC timestamp"]
-    end
-    B --> E
-    D --> E
-    D -. "manual copy + reconciliation" .-> G
-    F --> K(["Human review"])
-    I --> K
-```
+![End-to-end architecture: local Python and SQL pipeline, Power BI analytics, and Power Automate alerts, ending in human review](docs/diagrams/architecture.svg)
 
 The solid arrows are handled by my scripts and the connected tools. The dotted arrow is a manual step, and I documented it as a boundary: regenerating local data must not overwrite the cloud register's record of which alerts were already sent.
 
@@ -115,74 +95,19 @@ The solid arrows are handled by my scripts and the connected tools. The dotted a
 
 ### Where each control sits in the business process
 
-```mermaid
-flowchart LR
-    P1["Purchase<br/>request"] --> P2["Approval"] --> P3["Supplier<br/>invoice"] --> P4["Payment"] --> P5(["Human<br/>review"])
-    R4["R04: Potential<br/>split purchase"] -.-> P1
-    R3["R03: Wrong<br/>approver role"] -.-> P2
-    R2["R02: Paid without<br/>approval"] -.-> P4
-    R1["R01: Duplicate<br/>payment"] -.-> P4
-```
+![The four control rules mapped to request, approval and payment steps of procurement](docs/diagrams/control-points.svg)
 
 ### Data model
 
 I separated the source data into five related tables, so each control can trace a payment back through its invoice and request to the person who approved it.
 
-```mermaid
-erDiagram
-    EMPLOYEES ||--o{ PURCHASE_REQUESTS : "raises / approves"
-    SUPPLIERS ||--o{ PURCHASE_REQUESTS : "receives"
-    PURCHASE_REQUESTS ||--o| INVOICES : "billed by"
-    INVOICES ||--o{ PAYMENTS : "settled by"
-    EMPLOYEES {
-        text employee_id PK
-        text role "Staff, ProcurementOfficer, Manager"
-    }
-    SUPPLIERS {
-        text supplier_id PK
-        text supplier_name
-    }
-    PURCHASE_REQUESTS {
-        text request_id PK
-        numeric amount
-        text approval_status
-        text approved_by FK
-        text business_need_id
-    }
-    INVOICES {
-        text invoice_id PK
-        text request_id FK
-        numeric invoice_amount
-    }
-    PAYMENTS {
-        text payment_id PK
-        text invoice_id FK
-        numeric paid_amount
-        text payment_status
-    }
-```
+![Data model linking employees, suppliers, purchase requests, invoices and payments](docs/diagrams/data-model.svg)
 
 Allowing many payments per invoice is what makes a duplicate payment possible to represent and detect. For the dashboard, I reshaped this into a star schema: three fact tables and two shared dimensions (`DimSuppliers`, `DimDates`), joined by six one-way relationships, so one slicer filters every visual consistently.
 
 ### How an alert is sent
 
-```mermaid
-sequenceDiagram
-    actor R as Reviewer
-    participant F as Power Automate
-    participant X as Excel register
-    participant G as Gmail
-    R->>F: Start the flow manually
-    F->>X: List all rows
-    X-->>F: Findings
-    F->>F: Keep High + Open + Pending
-    loop Each eligible finding
-        F->>G: Send synthetic test alert
-        G-->>F: Success
-        F->>X: Set alert_status to Sent, add UTC time
-    end
-    Note over F,X: Sent rows no longer match the filter on the next run
-```
+![Alert sequence between the reviewer, Power Automate, the Excel register and Gmail](docs/diagrams/alert-sequence.svg)
 
 ## The four control rules
 
