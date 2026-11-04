@@ -1,205 +1,293 @@
+<div align="center">
+
+<img src="docs/gallery/grc-risk-monitor-gallery-v2.png" alt="GRC Risk Monitor: 61 records screened by 4 SQL control rules, producing 4 findings and 3 high-risk test alerts" width="100%">
+
 # GRC Risk Monitoring Dashboard with Automated Alerts
 
-**Python · SQL · SQLite · Power BI · Power Query · DAX · Power Automate · Excel Online · Gmail**
+**I turn procurement policy into checks that run: from raw transactions to reviewable findings, an interactive dashboard and email alerts.**
 
-A procurement control-monitoring prototype that turns transaction records into reviewable findings, an interactive Power BI dashboard, and test email alerts. It demonstrates translating business policies into SQL rules, reporting tables, workflow automation and repeatable checks.
+[![Baseline tests](https://github.com/gayashan-indrasankha/grc-risk-monitor/actions/workflows/python-tests.yml/badge.svg)](https://github.com/gayashan-indrasankha/grc-risk-monitor/actions/workflows/python-tests.yml)
+![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-SQLite-003B57?logo=sqlite&logoColor=white)
+![Power BI](https://img.shields.io/badge/Power%20BI-DAX-F2C811?logo=powerbi&logoColor=black)
+![Power Automate](https://img.shields.io/badge/Power%20Automate-Cloud%20flow-0066FF?logo=powerautomate&logoColor=white)
 
-> **Independent portfolio project using synthetic data only.** Findings require human investigation. Related amounts are associated transaction values, not confirmed fraud or financial loss. The local-to-cloud synchronization step is manual, and Stage 5 manual validation remains **PARTIAL**.
+[See it working](#see-it-working) · [How it works](#how-it-works) · [Control rules](#the-four-control-rules) · [Testing](#how-i-tested-it) · [Run it](#run-it-yourself)
 
-| Purchase requests | Invoices | Payment records | Findings | High / Medium | Open | Recorded local tests |
-|---:|---:|---:|---:|---:|---:|---:|
-| 20 | 20 | 21 | 4 | 3 / 1 | 4 | 28 passed |
+</div>
 
-[Run locally](#run-locally) · [Business rules](#business-rules) · [Test evidence](#testing-and-evidence) · [Architecture](docs/ARCHITECTURE_OVERVIEW.md) · [Interview demo](docs/DEMO_SCRIPT.md)
+> **Independent portfolio project using synthetic data only.** Suppliers, employees and transactions are fictional. Findings are prompts for human review, not proof of fraud or financial loss.
 
-![Power BI dashboard showing baseline counts, exception charts and findings](docs/evidence/stage5/power-bi-dashboard-overview.png)
+## The 30-second version
 
-## Business problem and implemented scope
+| | |
+|---|---|
+| **The problem** | A company pays suppliers through a request, approve, invoice and pay process. If an auditor checks those records by hand, a duplicate payment or a skipped approval can easily go unnoticed. |
+| **What I built** | An end-to-end monitoring prototype: SQL rules find policy exceptions, Power BI shows where to look, and a Power Automate flow emails a reviewer about each high-risk finding. |
+| **The result** | From 61 transaction records, the system flagged 4 findings (3 High, 1 Medium), covering all 4 scenarios I planted, with no false alarms on this test data. |
+| **The proof** | 28 automated tests pass, CI runs them on every push to `main`, and exports are reconciled against the source data. |
+| **What it shows about me** | I can read a business policy, turn it into precise logic, deliver it in tools people use, and be honest about where it stops working. |
 
-A fictional Sri Lankan company purchases goods and services from suppliers. Employees request purchases, authorized employees approve them, suppliers issue invoices, and finance records payments. An audit reviewer needs to identify control exceptions, understand the evidence and prioritize follow-up.
+## Why I built this
 
-`Purchase request → Approval → Supplier invoice → Payment → Exception screening → Human review`
+I wanted to work on the point where business risk meets data. A policy line such as *"purchases above LKR 100,000 need Manager approval"* sounds simple, but turning it into a check forces real questions:
 
-The repository contains:
+- Does exactly LKR 100,000 count as "above"?
+- Should a cancelled payment count as a duplicate?
+- If one person raises two requests for LKR 60,000 and LKR 65,000 three days apart, is that splitting a purchase or just normal business?
 
-- Reproducible source CSVs for **6 employees, 5 suppliers, 20 requests, 20 invoices and 21 payments**.
-- Four SQL rules executed by a Python detector, producing findings with severity, record references, evidence, recommended action and review status.
-- Five reporting exports, DAX measures and a saved [Power BI report](powerbi/report/GRC_Risk_Monitor.pbix).
-- Documentation and screenshots of a manually configured Power Automate flow that sends synthetic Gmail alerts from an Excel Online register.
-- Automated scenario, data-quality and export checks, plus a reconciliation script and a manual evidence report.
+So I modeled a fictional Sri Lankan company's procurement process, wrote down its policy, and built the whole path from data to a reviewer's inbox. I decided each of those edge cases deliberately, and each one now has a test.
 
-The current detector uses deterministic business rules. AI-assisted summaries and LLM evaluation are future extensions.
+## See it working
 
-## System architecture
+These are screenshots of the real project, not mock-ups.
+
+### 1. The dashboard shows where to look first
+
+KPI cards give the overall picture, charts break findings down by type and severity, and the table lists the evidence for each finding.
+
+![Power BI Desktop showing the risk dashboard and its five-table data model](docs/screenshots/power-bi-desktop-report-and-model.png)
+
+*The report in Power BI Desktop. The Data pane on the right shows the three fact tables and two dimension tables I modeled.*
+
+### 2. Filters let a reviewer narrow the view
+
+Every visual responds to the supplier and date slicers. I checked the filtered counts against the exported data.
+
+| Filter by date: 1–10 October 2026 | Filter by supplier: Fictional Facilities Co Ltd |
+|:--:|:--:|
+| ![Dashboard filtered to 1-10 October, showing 3 findings](docs/evidence/stage5/power-bi-dashboard-date-filter.png) | ![Dashboard filtered to one supplier, showing the wrong-approver finding](docs/evidence/stage5/power-bi-dashboard-supplier-filter.png) |
+| 10 requests · 7 payments · **3 findings** | 3 requests · 3 payments · **1 finding** |
+
+### 3. High-risk findings go to a reviewer
+
+My Power Automate flow reads the exception register, keeps only High, Open and not-yet-notified findings, sends an email for each, and records that the alert went out.
+
+![Successful Power Automate run processing 3 of 3 findings](docs/screenshots/power-automate-successful-run.png)
+
+*A successful run. "Apply to each" processed three findings, with an email and a register update for each one.*
+
+The alerts from that run arrived in the mailbox, clearly marked as test data:
+
+![Three synthetic high-risk alert emails in Gmail](docs/screenshots/gmail-alerts-from-successful-run.png)
+
+### 4. Running it again doesn't repeat the alerts
+
+Once a finding is marked `Sent`, the filter excludes it. In this re-run, the email and update steps were skipped:
+
+<img src="docs/evidence/stage5/power-automate-rerun-skipped-actions.png" alt="Power Automate re-run with the email and update steps skipped" width="360">
+
+### 5. The register holds the working list
+
+Each finding carries its type, severity, record references, supplier, value, evidence, recommended action and status.
+
+![Excel exception register with four fictional findings](docs/evidence/stage5/excel-exception-register-redacted.png)
+
+*Cropped before the reviewer-email and notification-status columns, to keep a real address out of a public repo.*
+
+## How it works
 
 ```mermaid
-flowchart TD
-    A["Synthetic source CSVs"] --> B["Local SQLite database"]
-    B --> C["SQL rules and Python detector"]
-    C --> D["output/exceptions.csv"]
-    B --> E["Python reporting export"]
+flowchart LR
+    subgraph LOCAL["Local pipeline: Python + SQL"]
+        A["Synthetic source CSVs<br/>61 transaction records"] --> B[("SQLite<br/>database")]
+        B --> C["4 SQL control rules<br/>run by Python detector"]
+        C --> D["exceptions.csv<br/>evidence + next action"]
+    end
+    subgraph BI["Analytics: Power BI"]
+        E["5 reporting tables"] --> F["Interactive dashboard<br/>KPIs, charts, slicers"]
+    end
+    subgraph CLOUD["Alerts: Microsoft cloud + Gmail"]
+        G["Excel Online<br/>exception register"] --> H["Power Automate flow"]
+        H --> I["Email alert to reviewer"]
+        I --> J["Row marked Sent<br/>with UTC timestamp"]
+    end
+    B --> E
     D --> E
-    E --> F["Five Power BI CSV tables"]
-    F --> G["Power BI Desktop dashboard"]
-    D -.->|Manual copy and reconciliation| H["Excel Online exception register in OneDrive"]
-    H --> I["Manually triggered Power Automate flow"]
-    I --> J{"High, Open and Pending?"}
-    J -->|Yes| K["Gmail synthetic test alert"]
-    K -->|On send success| L["Excel row update: Sent and UTC timestamp"]
-    J -->|No| M["Skip notification"]
+    D -. "manual copy + reconciliation" .-> G
+    F --> K(["Human review"])
+    I --> K
 ```
 
-**Manual boundary:** the local exception CSV, Power BI tables and cloud notification register are separate copies. Local regeneration does not synchronize the OneDrive workbook or preserve its notification state automatically. The working cloud flow and account connections are configured outside this repository.
+The solid arrows are handled by my scripts and the connected tools. The dotted arrow is a manual step, and I documented it as a boundary: regenerating local data must not overwrite the cloud register's record of which alerts were already sent.
 
-The [schema](sql/schema.sql) separates employees, suppliers, purchase requests, invoices and payments. A request has at most one invoice in this simplified schema; an invoice can have many payments, which makes duplicate-payment analysis possible. See the [data dictionary](docs/data_dictionary.md) and [architecture overview](docs/ARCHITECTURE_OVERVIEW.md).
+**More detail:** [Architecture overview](docs/ARCHITECTURE_OVERVIEW.md) · [Data dictionary](docs/data_dictionary.md) · [Demo script](docs/DEMO_SCRIPT.md)
 
-## Business rules
+### Where each control sits in the business process
 
-All amounts are in **LKR**. The fictional policy requires Manager approval for purchases **above LKR 100,000**, prohibits payment while approval is Pending or Rejected, and calls for investigation of duplicate payments and possible purchase splitting.
+```mermaid
+flowchart LR
+    P1["Purchase<br/>request"] --> P2["Approval"] --> P3["Supplier<br/>invoice"] --> P4["Payment"] --> P5(["Human<br/>review"])
+    R4["R04: Potential<br/>split purchase"] -.-> P1
+    R3["R03: Wrong<br/>approver role"] -.-> P2
+    R2["R02: Paid without<br/>approval"] -.-> P4
+    R1["R01: Duplicate<br/>payment"] -.-> P4
+```
 
-| Rule / severity | Implemented detection condition | Baseline example | Main limitation |
+### Data model
+
+I separated the source data into five related tables, so each control can trace a payment back through its invoice and request to the person who approved it.
+
+```mermaid
+erDiagram
+    EMPLOYEES ||--o{ PURCHASE_REQUESTS : "raises / approves"
+    SUPPLIERS ||--o{ PURCHASE_REQUESTS : "receives"
+    PURCHASE_REQUESTS ||--o| INVOICES : "billed by"
+    INVOICES ||--o{ PAYMENTS : "settled by"
+    EMPLOYEES {
+        text employee_id PK
+        text role "Staff, ProcurementOfficer, Manager"
+    }
+    SUPPLIERS {
+        text supplier_id PK
+        text supplier_name
+    }
+    PURCHASE_REQUESTS {
+        text request_id PK
+        numeric amount
+        text approval_status
+        text approved_by FK
+        text business_need_id
+    }
+    INVOICES {
+        text invoice_id PK
+        text request_id FK
+        numeric invoice_amount
+    }
+    PAYMENTS {
+        text payment_id PK
+        text invoice_id FK
+        numeric paid_amount
+        text payment_status
+    }
+```
+
+Allowing many payments per invoice is what makes a duplicate payment possible to represent and detect. For the dashboard, I reshaped this into a star schema: three fact tables and two shared dimensions (`DimSuppliers`, `DimDates`), joined by six one-way relationships, so one slicer filters every visual consistently.
+
+### How an alert is sent
+
+```mermaid
+sequenceDiagram
+    actor R as Reviewer
+    participant F as Power Automate
+    participant X as Excel register
+    participant G as Gmail
+    R->>F: Start the flow manually
+    F->>X: List all rows
+    X-->>F: Findings
+    F->>F: Keep High + Open + Pending
+    loop Each eligible finding
+        F->>G: Send synthetic test alert
+        G-->>F: Success
+        F->>X: Set alert_status to Sent, add UTC time
+    end
+    Note over F,X: Sent rows no longer match the filter on the next run
+```
+
+## The four control rules
+
+All amounts are in LKR. The fictional policy requires Manager approval above LKR 100,000, prohibits paying a request that is Pending or Rejected, and calls for investigation of duplicate payments and possible splitting.
+
+| Rule | Risk it addresses | What it checks | What it found |
 |---|---|---|---|
-| [R01 — High](sql/detection_rules/duplicate_payment.sql) | At least two Completed payments against one invoice, each equal to its full invoice amount. | `PAY-0003` and `PAY-0021` on `INV-0003` | Partial-payment overpayments, refunds and corrections need additional logic. |
-| [R02 — High](sql/detection_rules/completed_payment_without_approval.sql) | A Completed payment exists for a request whose current approval status is not Approved, regardless of amount. | `PR-0006`, LKR 165,000, Pending | Current status alone does not establish approval-before-payment chronology. |
-| [R03 — High](sql/detection_rules/wrong_approver_role.sql) | An Approved request exceeds LKR 100,000, has a Completed payment, and its approver is missing or has a role other than Manager. | `PR-0014`, LKR 145,000, ProcurementOfficer | Historical role changes and delegated authority are not modeled. |
-| [R04 — Medium](sql/detection_rules/potential_split_purchase.sql) | A pair shares supplier, requester and business need, is within three days, has each amount at or below LKR 100,000, and totals more than LKR 100,000. | `PR-0009` + `PR-0010`, LKR 60,000 + 65,000 | A pair-based screening heuristic; legitimate related requests can also match. |
+| [**R01 · High**](sql/detection_rules/duplicate_payment.sql)<br/>Duplicate payment | Paying a supplier twice | Two or more Completed payments on one invoice, each for the full amount | `INV-0003` paid by both `PAY-0003` and `PAY-0021` (LKR 85,000) |
+| [**R02 · High**](sql/detection_rules/completed_payment_without_approval.sql)<br/>Paid without approval | Money leaving before authorization | A Completed payment on a request that is not currently Approved | `PR-0006` paid while Pending (LKR 165,000) |
+| [**R03 · High**](sql/detection_rules/wrong_approver_role.sql)<br/>Wrong approver role | Approval beyond someone's authority | A paid request above the threshold approved by a non-Manager, or with no approver | `PR-0014` approved by a ProcurementOfficer (LKR 145,000) |
+| [**R04 · Medium**](sql/detection_rules/potential_split_purchase.sql)<br/>Potential split purchase | Dodging the approval threshold | Two requests with the same supplier, requester and business need, within 3 days, each at or below the threshold but above it combined | `PR-0009` + `PR-0010` (LKR 60,000 + 65,000) |
 
-The runtime detector reads the business records, **never the ground-truth labels**. The separate [test-only fixture](data/ground_truth_FOR_TESTS_ONLY.csv) is used for evaluation. Severity labels prioritize review; a flag does not prove misconduct.
+R04 is a screening heuristic, which is why I rated it Medium: legitimate related purchases can also match it, so it asks a reviewer to look rather than claiming a violation.
 
-## Power BI dashboard
+## Decisions I made, and why
 
-The report uses three fact tables (`FactRequests`, `FactPayments`, `FactExceptions`) and two shared dimensions (`DimSuppliers`, `DimDates`). It includes five KPI cards, findings by type and severity, an event timeline, a finding-detail table, and supplier/date slicers.
+| Decision | Why |
+|---|---|
+| **Transparent SQL rules, not a machine-learning model** | An auditor has to be able to explain why something was flagged. Every finding here traces back to a readable condition and specific record IDs. |
+| **Findings include evidence and a next step** | A flag isn't a verdict. Each finding carries its evidence and a recommended action, so the decision stays with a person. |
+| **The detector can't see the answer key** | The planted-scenario labels sit in a separate test-only file that the detector never loads, so the evaluation can't be quietly contaminated. |
+| **Update the register only after an email succeeds** | If a send fails, the finding stays Pending rather than being marked as notified when nobody was told. |
+| **Keep personal details out of public evidence** | I cropped the screenshots here to remove personal addresses, tenant details and account images. |
 
-| View | Requests | Payments | Findings | High | Open |
-|---|---:|---:|---:|---:|---:|
-| Baseline | 20 | 21 | 4 | 3 | 4 |
-| 1–10 October 2026 | 10 | 7 | 3 | 2 | 3 |
-| Fictional Facilities Co Ltd | 3 | 3 | 1 | 1 | 1 |
+## How I tested it
 
-The filtered screenshot counts agree with the current exports. Dates have different meanings: requests use `requested_on`, payments use `paid_on`, and findings use the underlying `event_date`. The baseline sum of related finding values is **LKR 520,000**, which is not a confirmed loss and may overlap across findings.
+| Check | Result |
+|---|---|
+| Automated tests ([`tests/`](tests/)) | **28 of 28 pass** |
+| Planted scenarios | **4 of 4 detected, 0 false positives, 0 missed** |
+| Reconciliation across database, exceptions and exports | **PASS** ([result](docs/stage5_validation_result.json)) |
+| Hosted CI ([workflow](.github/workflows/python-tests.yml)) | Rebuilds the baseline, runs the tests and reconciles on each push to `main` |
 
-<details>
-<summary>View date and supplier filtering examples</summary>
+The tests focus on the edge cases where rules usually go wrong:
 
-![Power BI date filter narrowing the report to three findings](docs/evidence/stage5/power-bi-dashboard-date-filter.png)
+- **Boundaries:** a request at exactly LKR 100,000 isn't flagged as above the threshold.
+- **False alarms:** cancelled and partial extra payments don't count as duplicates, and pairs outside the 3-day window aren't flagged as splits.
+- **Fixes clear findings:** correcting the approver to a Manager removes the finding.
+- **Data integrity:** foreign keys, unique keys, required values and export totals all agree.
+- **Safety:** the detector doesn't modify the database it reads.
 
-![Power BI supplier filter showing the wrong-approver-role finding](docs/evidence/stage5/power-bi-dashboard-supplier-filter.png)
+**What those numbers don't mean:** 100% on four scenarios I planted shows that the rules do what I designed them to do. It doesn't predict accuracy on real company data.
 
-</details>
+**What's still open:** manual acceptance testing is recorded as [partial](docs/STAGE5_RESULTS_TEMPLATE.md). Refresh, save and reopen, and the success-only email-to-update path are confirmed. The supplier filter reset and the full display of long evidence text still need checking, and the empty re-run is only partly evidenced. I haven't run the Gmail failure, Excel update failure or concurrent-run scenarios.
 
-Build/refresh guidance: [Power BI setup](powerbi/README.md) · [DAX measures](powerbi/DAX_Measures.txt). Full evidence/action readability and supplier-filter reset remain open manual checks in the [Stage 5 report](docs/STAGE5_RESULTS_TEMPLATE.md).
+## What I'd improve next
 
-## Power Automate notification workflow
+| Current limit | What I'd build |
+|---|---|
+| Rules check current approval status, not whether approval came before payment | Add approval-chronology checks and an approval history |
+| Partial overpayments, refunds and delegated authority aren't modeled | Extend the rules, with independently reviewed test cases |
+| If an email sends but the Excel update then fails, a retry can send it twice; overlapping runs can too | A notification outbox with stable finding IDs and durable claiming |
+| The local-to-cloud sync is manual and the flow starts by hand | A scheduled pipeline that preserves delivery state |
+| Four planted scenarios on a small dataset | A larger dataset with more positive and negative cases |
+| Reviewers read the raw evidence themselves | AI-drafted summaries linked to evidence, evaluated and approved by a person |
 
-The manually triggered cloud flow:
+## Skills this project demonstrates
 
-1. Lists rows from the OneDrive Excel exception register.
-2. Filters `severity = High`, `status = Open`, and `alert_status = Pending`.
-3. Processes eligible findings in **Apply to each**.
-4. Sends a synthetic test notification through the Gmail connector.
-5. Updates the Excel row keyed by `finding_id` to `Sent`, with a UTC timestamp, after email success.
+| Skill | Where you can see it |
+|---|---|
+| **Business analysis and GRC thinking** | Turning a procurement policy into four testable controls with severity levels |
+| **SQL and data modeling** | [Relational schema](sql/schema.sql), multi-table joins, self-joins for pair detection |
+| **Python** | [Standard-library pipeline](scripts/): data generation, detection, export, reconciliation |
+| **BI and data visualization** | [Power BI report](powerbi/report/GRC_Risk_Monitor.pbix), star schema, Power Query, [DAX measures](powerbi/DAX_Measures.txt) |
+| **Process automation** | Power Automate flow with Excel Online and Gmail connectors, plus notification state |
+| **Quality and testing** | 28 unit and data-quality tests, boundary cases, reconciliation, GitHub Actions |
+| **Documentation and judgment** | [Test report](docs/STAGE5_RESULTS_TEMPLATE.md), evidence redaction, clearly stated limits |
 
-The supplied mailbox evidence shows **three test alert subjects**, for `EX-0001`, `EX-0002` and `EX-0003`. The tester confirmed success-only Run after configuration. The original private register attachment showed the three High-risk rows as Sent and the Medium-risk row as Pending; the public cropped copy excludes the address and notification-status columns.
+## Run it yourself
 
-The archived rerun diagram shows skipped email/update actions. **The exact empty-filter output, zero iteration count and no-new-email outcome remain partially evidenced (PA04).** Pending/Sent filtering provides basic sequential rerun suppression by design; delivery and state update are separate actions, so failures or concurrent runs can cause duplicates.
-
-![Power Automate rerun diagram with skipped email and Excel update actions](docs/evidence/stage5/power-automate-rerun-skipped-actions.png)
-
-More evidence: [synthetic alert subjects](docs/evidence/stage5/gmail-synthetic-risk-alerts.png) · [cropped Excel register](docs/evidence/stage5/excel-exception-register-redacted.png) · [screenshot index](docs/evidence/stage5/README.md) · [workflow test guide](docs/STAGE5_POWER_AUTOMATE_TESTS.md).
-
-## Technology stack
-
-| Area | Technology | Purpose |
-|---|---|---|
-| Processing | Python standard library | Fixture generation, rule orchestration, CSV export and reconciliation |
-| Data | SQL and SQLite | Relational records, joins and transparent control checks |
-| Analytics | Power BI Desktop, Power Query, DAX | CSV import, model preparation, measures and interactive reporting |
-| Workflow | Power Automate, Excel Online/OneDrive, Gmail connector | Manual cloud alert prototype and notification-state updates |
-| Quality | Python unittest | Detection scenarios, boundary cases, data quality and export checks |
-| Development | Git/GitHub; GitHub Actions workflow definition | Version history and local-only synthetic CI setup |
-
-## Run locally
-
-Prerequisites: Git and **Python 3.11 recommended** (the recorded reproducibility run used 3.11.9). Local scripts use only the Python standard library; no package installation is required. Power BI Desktop on Windows is needed to open the `.pbix`. Cloud alerts require separately configured Microsoft and Gmail accounts/connectors.
+You need Python 3.11 and Git. There's nothing to install, because the scripts use only the standard library.
 
 ```powershell
 git clone https://github.com/gayashan-indrasankha/grc-risk-monitor.git
 cd grc-risk-monitor
-```
 
-For a **fresh clone or disposable local fixture checkout**, run:
-
-```powershell
-python scripts/generate_sample_data.py
-python scripts/setup_local.py
-python scripts/check_stage1.py
-python scripts/run_queries.py
-python scripts/detect_exceptions.py
-python scripts/evaluate_stage2.py
-python scripts/export_powerbi.py
+python scripts/generate_sample_data.py          # Create the synthetic records
+python scripts/setup_local.py                   # Build the SQLite database
+python scripts/detect_exceptions.py             # Run the four control rules
+python scripts/export_powerbi.py                # Create the reporting tables
 python -m unittest discover -s tests -p "test_*.py" -v
-python scripts/stage5_validate.py
+python scripts/stage5_validate.py               # Reconcile the results
 ```
 
-`generate_sample_data.py` rewrites the synthetic CSVs; `setup_local.py` deletes and recreates **only** the local `grc_stage1.sqlite` fixture. Do not use regeneration to reset a cloud notification register or replace existing Sent rows with new Pending values.
+You should see 28 tests pass and a reconciliation result of `PASS` with 4 findings.
 
-The local outputs are `grc_stage1.sqlite`, `output/exceptions.csv`, the five `powerbi/data/` CSVs and `docs/stage5_validation_result.json`. The database and local exception CSV are ignored by Git; synthetic reporting inputs are intentionally tracked. Explore `INV-0003` with the query runner or [first_queries.sql](sql/first_queries.sql) to see its two payments.
+To explore the dashboard, open [`GRC_Risk_Monitor.pbix`](powerbi/report/GRC_Risk_Monitor.pbix) in Power BI Desktop on Windows, update the CSV paths if needed, and refresh ([setup guide](powerbi/README.md)). The cloud flow lives in my Microsoft account rather than this repo; the [workflow test guide](docs/STAGE5_POWER_AUTOMATE_TESTS.md) describes how it's checked.
 
-For an existing prepared baseline, run tests and reconciliation without regenerating source data:
-
-```powershell
-python -m unittest discover -s tests -p "test_*.py" -v
-python scripts/stage5_validate.py
-```
-
-Open [GRC_Risk_Monitor.pbix](powerbi/report/GRC_Risk_Monitor.pbix), update its local CSV source paths if needed, and refresh. The Python commands do not provision a Power Automate flow or cloud connections. Follow the [Power BI guide](powerbi/README.md) and [manual workflow checks](docs/STAGE5_POWER_AUTOMATE_TESTS.md) for those parts.
-
-The schema can also be used for PostgreSQL exploration, importing employees, suppliers, requests, invoices and payments in that order. The current detection pipeline uses SQLite-specific SQL/functions and parameter syntax; an end-to-end PostgreSQL migration would require adaptation.
-
-## Testing and evidence
-
-The recorded local run reports **28 tests passed** and **Stage 5 reconciliation PASS**, with 20 requests, 21 payments, 4 findings, 3 High, 1 Medium and 4 Open. Coverage includes full/cancelled/partial payments, approval roles, threshold and date-window boundaries, referential integrity, table keys and export agreement.
-
-Evaluation exactly matches the **four planted scenarios**: **TP = 4, FP = 0, FN = 0**, giving 100% fixture precision and recall. These values do not estimate performance on real enterprise data.
-
-**Manual acceptance remains PARTIAL.** Refresh, save/reopen and success-only Run after were tester-confirmed. Supplier reset, complete Power BI detail display and focused first-/second-run filter evidence remain open. Gmail failure, post-send Excel failure and concurrent-flow tests remain **Not run**.
-
-- [Stage 5 results, provenance and remaining actions](docs/STAGE5_RESULTS_TEMPLATE.md)
-- [Validation JSON](docs/stage5_validation_result.json)
-- [Test plan](docs/STAGE5_TEST_PLAN.md)
-- [Automated tests](tests/)
-- [GitHub Actions workflow](.github/workflows/python-tests.yml): generates synthetic local fixtures, runs tests and reconciles exports without cloud credentials. A hosted CI run has not been verified here.
-
-## Limitations and future work
-
-- **Synthetic, limited data:** four deliberately planted cases cannot establish production effectiveness. Expand independently reviewed positive and negative scenarios.
-- **Narrow rules:** approval chronology, refunds, cumulative installment overpayments and historical delegation need richer requirements and checks.
-- **Manual cloud synchronization:** preserve delivery state when reconciling exports; sequential finding IDs can change when datasets change.
-- **Delivery reliability:** a Gmail success followed by failed Excel update can lead to another send on retry; overlapping runs can select the same Pending row. Stable business identities, durable claiming and a notification outbox are proposed improvements.
-- **Review and privacy:** findings require human review. Keep real business data, account identifiers, credentials and unredacted private screenshots out of this public portfolio.
-- **Deployment:** there is no production service, enterprise application authentication layer, or deployed AI agent in this repository. The prototype uses local files and account-managed cloud connectors.
-- **Possible AI extension:** evidence-linked draft summaries or policy-review assistance could be evaluated later with reusable tests and human approval.
-
-## Repository and learning guide
+<details>
+<summary><b>Repository structure</b></summary>
 
 ```text
-data/                  Synthetic source CSVs and tests-only ground truth
-sql/                   Schema, exploration queries and four detection rules
-scripts/               Generation, setup, detection, evaluation, export, validation
-output/                Ignored local exception CSV
-powerbi/               Report, reporting tables, DAX and setup guide
-tests/                 Local unittest suites
-docs/                  Data dictionary, architecture, evidence and interview notes
-docs/evidence/stage5/  Reviewed screenshot archive
-.github/workflows/     Synthetic local pipeline CI definition
+data/                Synthetic source CSVs and the tests-only answer key
+sql/                 Schema, exploration queries and the four detection rules
+scripts/             Generation, setup, detection, evaluation, export, validation
+powerbi/             Report, reporting tables, DAX measures and setup guide
+tests/               Automated test suites
+docs/                Architecture, data dictionary, test report and evidence
+.github/workflows/   CI for the synthetic baseline
 ```
 
-Start with the [data dictionary](docs/data_dictionary.md), follow a request through its invoice and payments, then inspect the SQL rules and tests. The one-invoice-per-request simplification and one-to-many invoice/payments relationship are intentional learning choices.
+</details>
 
-For a short walkthrough, use the [3–5 minute demo](docs/DEMO_SCRIPT.md). Further notes: [interview practice](docs/IFS_INTERVIEW_PREP.md) · [CV project entry](docs/CV_PROJECT_ENTRY.md) · [portfolio checklist](docs/STAGE6_CHECKLIST.md).
+## About me
 
-## Author and project context
+I'm **Gayashan Indrasankha**, and I built this project independently to develop my skills in GRC analytics and AI and automation. I'm looking for internship opportunities in these areas, and I'd be glad to walk you through the project.
 
-Maintained by **Gayashan Indrasankha** as an independent learning and portfolio project demonstrating procurement data modeling, SQL/Python control analytics, Power BI reporting, business-process automation and testing.
-
-The project is relevant to GRC analytics and AI & Automation internship work. It is independent of IFS and does not imply IFS sponsorship, endorsement, employment or access to internal systems. Describe personal contributions and any tools or assistance accurately during a walkthrough.
+[GitHub profile](https://github.com/gayashan-indrasankha)
