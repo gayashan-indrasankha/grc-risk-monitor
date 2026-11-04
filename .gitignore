@@ -21,3 +21,6 @@ output/*.csv
 docs/evidence/*
 !docs/evidence/stage5/
 !docs/evidence/stage5/*
+
+# Personal notes kept out of the public repo
+private-notes/

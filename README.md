@@ -215,4 +215,4 @@ docs/                Architecture, data dictionary, test report and evidence
 
 I'm **Gayashan Indrasankha**, and I built this project independently to develop my skills in GRC analytics and AI and automation. I'm looking for internship opportunities in these areas, and I'd be glad to walk you through the project.
 
-[GitHub profile](https://github.com/gayashan-indrasankha)
+[LinkedIn](https://www.linkedin.com/in/gayashan-indrasankha/) · [Email](mailto:gayashanIndrasankha@gmail.com) · [GitHub](https://github.com/gayashan-indrasankha)
